@@ -2,13 +2,16 @@ package com.example.move_marker_master
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import kotlinx.android.synthetic.main.activity_maps.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -32,12 +35,38 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+    fun mapInit(googleMap: GoogleMap){
+        googleMap.apply {
+            // just a random location our map will point to when its launched
+            val klcc = LatLng(3.1579513, 101.7116233)
+            addMarker(MarkerOptions().apply {
+                position(klcc)
+                title("Marker pointed at klcc")
+                draggable(false)
+            })
+            // setup zoom level
+            animateCamera(CameraUpdateFactory.newLatLngZoom(klcc,18f))
+
+            // maps events we need to respond to
+            googleMap.setOnCameraMoveListener {
+                mMap.clear()
+                // display imageView
+                imgLocationPinUp?.visibility = View.VISIBLE
+            }
+            googleMap.setOnCameraIdleListener {
+                imgLocationPinUp?.visibility = View.GONE
+                // customizing map marker with a custom icon
+                // and place it on the current map camera position
+                val markerOptions = MarkerOptions().position(mMap.cameraPosition.target)
+
+                mMap.addMarker(markerOptions)
+            }
+
+        }
+    }
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        mapInit(googleMap)
 
-        // Add a marker in Sydney and move the camera
-        val sydney = LatLng(-34.0, 151.0)
-        mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
     }
 }
